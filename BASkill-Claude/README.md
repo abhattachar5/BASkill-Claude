@@ -118,7 +118,7 @@ Organisation owners can provision this skill for all users via **Organisation Se
 
 ## 👤 Author
 
-**Abhishek Bhattacharya** · Lead Product Owner, Swiss Re L&H Re  
+**Abhishek Bhattacharya**   
 Built for BAs working on AI transformation, underwriting platforms, and digital programmes in insurance.
 
 ---
