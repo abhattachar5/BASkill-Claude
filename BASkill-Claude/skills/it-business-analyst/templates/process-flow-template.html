@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} | Process Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c1220;
+    --surface: #141e33;
+    --surface-hover: #1a2740;
+    --border: #1e3050;
+    --text: #e4e8f1;
+    --text-muted: #7b8ba8;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-green: #22c55e;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-purple: #a855f7;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .container { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 40px 32px; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 48px; }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 20px; padding: 6px 16px;
+    font-size: 12px; font-weight: 600; color: var(--accent-blue);
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 20px;
+  }
+  .header-badge::before {
+    content: ''; width: 6px; height: 6px; background: var(--accent-blue);
+    border-radius: 50%; animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+    50% { opacity:0.7; box-shadow: 0 0 0 6px rgba(59,130,246,0); }
+  }
+  .header h1 {
+    font-size: 36px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px;
+    background: linear-gradient(135deg, #e4e8f1, #3b82f6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .header p { font-size: 15px; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.6; }
+
+  /* Stats bar */
+  .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+  /* Legend */
+  .legend { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; font-size: 13px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+  .legend-dot.auto { background: var(--accent-green); }
+  .legend-dot.ai { background: var(--accent-purple); }
+  .legend-dot.human { background: var(--accent-blue); }
+  .legend-dot.gate { background: var(--accent-amber); }
+  .legend-dot.output { background: var(--accent-cyan); }
+
+  /* Phase bands */
+  .phase {
+    position: relative; border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px 32px; margin-bottom: 24px; background: var(--surface);
+    transition: all 0.3s ease;
+    opacity: 0; transform: translateY(20px); animation: fadeUp 0.5s ease forwards;
+  }
+  .phase:hover { background: var(--surface-hover); border-color: rgba(59,130,246,0.3); box-shadow: 0 4px 30px rgba(59,130,246,0.06); }
+  .phase:nth-child(1) { animation-delay: 0.1s; }
+  .phase:nth-child(2) { animation-delay: 0.15s; }
+  .phase:nth-child(3) { animation-delay: 0.2s; }
+  .phase:nth-child(4) { animation-delay: 0.25s; }
+  .phase:nth-child(5) { animation-delay: 0.3s; }
+  .phase:nth-child(6) { animation-delay: 0.35s; }
+  .phase:nth-child(7) { animation-delay: 0.4s; }
+  .phase:nth-child(8) { animation-delay: 0.45s; }
+  .phase:nth-child(9) { animation-delay: 0.5s; }
+  .phase:nth-child(10) { animation-delay: 0.55s; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  .phase-label {
+    position: absolute; top: -11px; left: 24px; background: var(--bg);
+    padding: 2px 14px; font-size: 11px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* Nodes */
+  .nodes-row { display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .node {
+    position: relative; flex: 1 1 180px; max-width: 260px; min-height: 90px;
+    padding: 16px 14px; border-radius: 12px; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+    cursor: pointer; transition: all 0.25s ease; border: 1px solid transparent;
+  }
+  .node:hover { transform: translateY(-3px); z-index: 2; }
+  .node-icon { font-size: 22px; margin-bottom: 8px; }
+  .node-title { font-size: 13px; font-weight: 600; line-height: 1.35; margin-bottom: 4px; }
+  .node-sub { font-size: 11px; color: var(--text-muted); line-height: 1.3; font-family: 'JetBrains Mono', monospace; }
+
+  .node.auto { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2); }
+  .node.auto:hover { border-color: var(--accent-green); box-shadow: 0 6px 24px rgba(34,197,94,0.15); }
+  .node.auto .node-title { color: #86efac; }
+
+  .node.ai { background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.2); }
+  .node.ai:hover { border-color: var(--accent-purple); box-shadow: 0 6px 24px rgba(168,85,247,0.15); }
+  .node.ai .node-title { color: #d8b4fe; }
+
+  .node.human { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.2); }
+  .node.human:hover { border-color: var(--accent-blue); box-shadow: 0 6px 24px rgba(59,130,246,0.15); }
+  .node.human .node-title { color: #93c5fd; }
+
+  .node.gate { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
+  .node.gate:hover { border-color: var(--accent-amber); box-shadow: 0 6px 24px rgba(245,158,11,0.15); }
+  .node.gate .node-title { color: #fcd34d; }
+
+  .node.output { background: rgba(6,182,212,0.08); border-color: rgba(6,182,212,0.2); }
+  .node.output:hover { border-color: var(--accent-cyan); box-shadow: 0 6px 24px rgba(6,182,212,0.15); }
+  .node.output .node-title { color: #67e8f9; }
+
+  /* Connectors */
+  .connector { display: flex; justify-content: center; padding: 6px 0; }
+  .connector-line {
+    width: 2px; height: 28px;
+    background: linear-gradient(to bottom, var(--border), rgba(59,130,246,0.4));
+    position: relative;
+  }
+  .connector-line::after {
+    content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 6px solid rgba(59,130,246,0.4);
+  }
+
+  /* Branch info */
+  .branch-info { display: flex; justify-content: center; gap: 48px; margin-top: 10px; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+  .branch-yes { color: var(--accent-green); }
+  .branch-no { color: var(--accent-amber); }
+
+  /* Detail panel */
+  .detail-panel {
+    position: fixed; top: 0; right: -460px; width: 440px; height: 100vh;
+    background: var(--surface); border-left: 1px solid var(--border);
+    padding: 32px 28px; overflow-y: auto;
+    transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+    z-index: 100; box-shadow: -20px 0 60px rgba(0,0,0,0.4);
+  }
+  .detail-panel.open { right: 0; }
+  .detail-close {
+    position: absolute; top: 20px; right: 20px; width: 32px; height: 32px;
+    border-radius: 8px; border: 1px solid var(--border); background: var(--bg);
+    color: var(--text-muted); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .detail-close:hover { border-color: var(--accent-blue); color: var(--text); }
+  .detail-epic { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .detail-title { font-size: 22px; font-weight: 700; margin-bottom: 16px; line-height: 1.3; }
+  .detail-desc { font-size: 14px; line-height: 1.7; color: var(--text-muted); margin-bottom: 24px; }
+  .detail-section { margin-bottom: 20px; }
+  .detail-section h4 { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .detail-list { list-style: none; padding: 0; }
+  .detail-list li { position: relative; padding: 8px 0 8px 20px; font-size: 13px; line-height: 1.5; border-bottom: 1px solid rgba(30,48,80,0.5); }
+  .detail-list li::before { content: '→'; position: absolute; left: 0; color: var(--accent-blue); font-weight: 600; }
+  .detail-tech { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tech-tag {
+    padding: 4px 10px; border-radius: 6px; font-size: 11px;
+    font-family: 'JetBrains Mono', monospace; font-weight: 500;
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); color: #93c5fd;
+  }
+
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+
+  .footer { text-align: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
+
+  @media print {
+    body { background: #fff; color: #111; }
+    body::before { display: none; }
+    .phase { border-color: #ccc; background: #fafafa; break-inside: avoid; }
+    .node { border-color: #ddd !important; }
+    .node-title { color: #111 !important; }
+    .detail-panel, .overlay { display: none !important; }
+    .header h1 { -webkit-text-fill-color: #111; background: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-badge">{{BADGE_TEXT}}</div>
+    <h1>{{TITLE}}</h1>
+    <p>{{SUBTITLE}}</p>
+  </div>
+
+  <div class="stats-bar" id="statsBar">
+    <!-- Stats injected by JS from config -->
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot auto"></div> Automated / Deterministic</div>
+    <div class="legend-item"><div class="legend-dot ai"></div> AI / Probabilistic</div>
+    <div class="legend-item"><div class="legend-dot human"></div> Human-in-the-Loop</div>
+    <div class="legend-item"><div class="legend-dot gate"></div> Decision Gate</div>
+    <div class="legend-item"><div class="legend-dot output"></div> Output / Integration</div>
+  </div>
+
+  <div class="flow-canvas" id="flowCanvas">
+    <!-- Phases injected by JS from config -->
+  </div>
+
+  <div class="footer" id="footerText">{{FOOTER}}</div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <button class="detail-close" onclick="closeDetail()">✕</button>
+  <div class="detail-epic" id="detailEpic"></div>
+  <div class="detail-title" id="detailTitle"></div>
+  <div class="detail-desc" id="detailDesc"></div>
+  <div id="detailSections"></div>
+</div>
+
+<script>
+// ============================================================
+// PROCESS FLOW CONFIGURATION
+// Replace this config object with your process-specific data.
+// ============================================================
+const config = {{FLOW_CONFIG_JSON}};
+
+// --- Render stats ---
+const statsBar = document.getElementById('statsBar');
+if (config.stats) {
+  const colors = ['var(--accent-green)','var(--accent-blue)','var(--accent-purple)','var(--accent-amber)','var(--accent-cyan)','var(--accent-red)'];
+  config.stats.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+    card.innerHTML = `<div class="stat-value" style="color:${colors[i % colors.length]}">${s.value}</div><div class="stat-label">${s.label}</div>`;
+    statsBar.appendChild(card);
+  });
+}
+
+// --- Render flow phases ---
+const canvas = document.getElementById('flowCanvas');
+const phaseColors = {
+  extract: 'var(--accent-cyan)', map: 'var(--accent-purple)',
+  decide: 'var(--accent-green)', orchestrate: 'var(--accent-blue)',
+  output: 'var(--accent-amber)', entry: 'var(--accent-blue)',
+  input: 'var(--accent-blue)', default: 'var(--accent-blue)'
+};
+
+config.phases.forEach((phase, pi) => {
+  // Connector between phases
+  if (pi > 0) {
+    const conn = document.createElement('div');
+    conn.className = 'connector';
+    conn.innerHTML = '<div class="connector-line"></div>';
+    canvas.appendChild(conn);
+  }
+
+  const div = document.createElement('div');
+  div.className = 'phase';
+  div.style.animationDelay = `${0.1 + pi * 0.05}s`;
+
+  const labelColor = phaseColors[phase.type] || phaseColors.default;
+  let html = `<div class="phase-label" style="color:${labelColor}; border-color:${labelColor}">${phase.label}</div>`;
+  html += '<div class="nodes-row">';
+  phase.nodes.forEach(node => {
+    html += `<div class="node ${node.type}" onclick="showDetail('${node.id}')">`;
+    html += `<div class="node-icon">${node.icon}</div>`;
+    html += `<div class="node-title">${node.title}</div>`;
+    if (node.sub) html += `<div class="node-sub">${node.sub}</div>`;
+    html += '</div>';
+  });
+  html += '</div>';
+  if (phase.branches) {
+    html += '<div class="branch-info">';
+    if (phase.branches.yes) html += `<span class="branch-yes">✓ ${phase.branches.yes}</span>`;
+    if (phase.branches.no) html += `<span class="branch-no">✗ ${phase.branches.no}</span>`;
+    html += '</div>';
+  }
+  div.innerHTML = html;
+  canvas.appendChild(div);
+});
+
+// --- Detail panel ---
+const details = config.details || {};
+
+function showDetail(key) {
+  const d = details[key];
+  if (!d) return;
+  document.getElementById('detailEpic').textContent = d.epic || '';
+  document.getElementById('detailEpic').style.color = d.epicColor || 'var(--accent-blue)';
+  document.getElementById('detailTitle').textContent = d.title || '';
+  document.getElementById('detailDesc').textContent = d.desc || '';
+  let html = '';
+  (d.sections || []).forEach(s => {
+    html += `<div class="detail-section"><h4>${s.title}</h4>`;
+    if (s.items) { html += '<ul class="detail-list">'; s.items.forEach(i => html += `<li>${i}</li>`); html += '</ul>'; }
+    if (s.tags) { html += '<div class="detail-tech">'; s.tags.forEach(t => html += `<span class="tech-tag">${t}</span>`); html += '</div>'; }
+    html += '</div>';
+  });
+  document.getElementById('detailSections').innerHTML = html;
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+</script>
+</body>
+</html>
